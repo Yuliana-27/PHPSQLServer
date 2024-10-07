@@ -86,10 +86,10 @@
                         <label for="area" class="form-label">Departamento</label>
                         <select class="form-select" id="area" name="area" required>
                         <option value="" disabled selected>Selecciona un Departamento</option>
-                        <option value="administracion">RRHH</option>
-                        <option value="ventas">Mantenimiento</option>
-                        <option value="soporte">Lavanderia</option>
-                        <option value="marketing">Roperia</option>
+                        <option value="rrhh">RRHH</option>
+                        <option value="mantenimineto">Mantenimiento</option>
+                        <option value="lavanderia">Lavanderia</option>
+                        <option value="roperia">Roperia</option>
                     </select>
                 </div>
                     <div class="mb-3">
@@ -226,7 +226,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $contenidoQR = "$nombre  - $placas - $modeloMarca - $color";
 
     // Ruta donde se guardará el QR
-        $filename = "img_qr/qr_$tipo" . time() . ".png";
+     //   $filename = "img_qr/qr_$tipo" . time() . ".png";
+    //Sanitizar el nombre para evitar problemas con los nombres de archivo
+    $nombre_sanitizado = str_replace('','_',$nombre);
+    //Si es empleado, usamos el Nombre y Numero de colaborador en el nombre del archivo
+        if ($tipo == 'empleado'){
+            $numeroColaborador=$_POST['numero_colaborador'];
+            $filename="img_qr/qr_" . $nombre_sanitizado . "_" . $numeroColaborador . ".png";
+        }
+
+    //Para invitados y proveedores, usamos solo el nombre del archivo
+        else {
+            $filename= "img_qr/qr_" . $nombre_sanitizado . ".png";
+        }
     
         // Mostrar el código QR
         echo "<div class='alert alert-success text-center'>Registro exitoso. Código QR generado.</div>";

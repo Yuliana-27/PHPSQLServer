@@ -1,9 +1,17 @@
 function registrar() {
-    const email = document.getElementById('emailRegistro').value;
-    const password = document.getElementById('passwordRegistro').value;
+    const nombre = document.getElementById('nombreRegistro').value; // Obtener el nombre
+    const hotel = document.getElementById('hotelRegistro').value; // Obtener el hotel
+    const email = document.getElementById('emailRegistro').value; // Obtener el email
+    const password = document.getElementById('passwordRegistro').value; // Obtener la contraseña
+
+    // Agrega estos logs para ver qué se está capturando
+    console.log('Nombre:', nombre);
+    console.log('Hotel:', hotel);
+    console.log('Email:', email);
+    console.log('Password:', password);
 
     // Validación de campos
-    if (email === '' || password === '') {
+    if (nombre === '' || hotel === '' || email === '' || password === '') {
         alert('Por favor, completa todos los campos');
         return;
     }
@@ -15,19 +23,19 @@ function registrar() {
     }
 
     // Crear el objeto con los datos del formulario
-    const data = { email: email, password: password };
+    const data = { nombre: nombre, hotel: hotel, email: email, password: password }; // Incluye nombre y hotel
 
     // Enviar los datos al servidor usando fetch
-    fetch('procesar_registro.php', {  // Esta es la URL correcta
+    fetch('procesar_registro.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.text())  // Primero obtenemos la respuesta como texto
+    .then(response => response.text())
     .then(responseText => {
-        console.log('Respuesta del servidor:', responseText);  // Log de la respuesta cruda para depurar
+        console.log('Respuesta del servidor:', responseText);
 
         // Intentar parsear la respuesta como JSON si es posible
         try {
@@ -41,21 +49,17 @@ function registrar() {
     .then(data => {
         if (data.success) {
             alert('Registro exitoso, ahora puedes iniciar sesión');
-            document.getElementById('emailRegistro').value = '';
-            document.getElementById('passwordRegistro').value = '';
+            document.getElementById('nombreRegistro').value = ''; // Limpiar el nombre
+            document.getElementById('hotelRegistro').value = ''; // Limpiar el hotel
+            document.getElementById('emailRegistro').value = ''; // Limpiar el email
+            document.getElementById('passwordRegistro').value = ''; // Limpiar la contraseña
             window.location.href = 'index.php';  // Redirigir a la página de login
         } else {
             alert('Error: ' + data.message);  // Mostrar el mensaje de error del servidor
         }
     })
     .catch(error => {
-        console.error('Error en el registro:', error);  // Mostrar más detalles del error en la consola
+        console.error('Error en el registro:', error);
         alert('Ocurrió un error durante el registro. Detalles: ' + error.message);
     });
-}
-
-// Función para validar el formato del correo electrónico
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
 }

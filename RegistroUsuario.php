@@ -26,14 +26,30 @@
 
         <form class="mx-auto w-75">
 
+        <div class="mb-3">
+                <label for="nombre" class="form-label fw-bold">Nombre Completo</label>
+                <input type="text" class="form-control" id="nombreRegistro" name="nombre" require>
+            </div>
+        
+            <div class="mb-3">
+                        <label for="hotel" class="form-label">Complejo</label>
+                        <select class="form-select" id="hotelRegistro" name="hotel" required>
+                        <option value="" disabled selected>Selecciona tu complejo</option>
+                        <option value="grandpalladium">Grand Palladium</option>
+                        <option value="trscoral">TRS Coral</option>
+                        <option value="transversal">Transversal</option>
+                    </select>
+
+                </div>
+        
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Correo Electrónico</label>
-                <input type="email" class="form-control" id="emailRegistro" name="email">
+                <input type="email" class="form-control" id="emailRegistro" name="email" require>
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label fw-bold">Contraseña</label>
-                <input type="password" class="form-control" id="passwordRegistro" name="password">
+                <input type="password" class="form-control" id="passwordRegistro" name="password" require>
             </div>
 
             <div class="d-grid">
