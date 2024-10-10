@@ -1,3 +1,9 @@
+// Función para validar el formato del correo electrónico
+function validateEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
 function registrar() {
     const nombre = document.getElementById('nombreRegistro').value; // Obtener el nombre
     const hotel = document.getElementById('hotelRegistro').value; // Obtener el hotel
