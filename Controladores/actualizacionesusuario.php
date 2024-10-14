@@ -8,12 +8,14 @@ if (isset($_POST['actualizar'])) {
     $nombre_ = $_POST['nombre'];
     $email_ = $_POST['email'];
     $hotel_ = $_POST['hotel'];
+    $rol_ = $_POST['rol'];
 
     // Actualizar los datos del usuario en la base de datos
-    $sql = "UPDATE usuario SET nombre = ?, email = ?, hotel = ? WHERE id = ?";
+    $sql = "UPDATE usuario SET nombre = ?, email = ?, hotel = ?, rol = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
-    if ($stmt->execute([$nombre_, $email_, $hotel_, $id_])) {
+    if ($stmt->execute([$nombre_, $email_, $hotel_, $rol_, $id_])) {
+
         echo "<div class='alert alert-success' role='alert'>Usuario actualizado correctamente</div>";
     } else {
         echo "<div class='alert alert-danger' role='alert'>Error al actualizar el usuario</div>";
@@ -35,7 +37,7 @@ if (isset($_GET['eliminar'])) {
 }
 
 // Obtener usuarios
-$sql = "SELECT id, nombre, email, hotel FROM usuario";
+$sql = "SELECT id, nombre, email, hotel, rol FROM usuario";
 $stmt = $conn->query($sql);
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -57,7 +59,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Formulario de actualización -->
         <?php if (isset($_GET['id'])): 
             $id = $_GET['id'];
-            $sql = "SELECT nombre, email, hotel FROM usuario WHERE id = ?";
+            $sql = "SELECT nombre, email, hotel, rol FROM usuario WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$id]);
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -72,6 +74,15 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" value="<?php echo $usuario['email']; ?>" required>
             </div>
+            <div class="mb-3">
+    <label for="rol" class="form-label">Rol</label>
+    <select class="form-control" id="rol" name="rol" required>
+        <option value="" disabled selected>Seleccione un rol</option>
+        <option value="admin" <?php if ($usuario['rol'] == 'admin') echo 'selected'; ?>>Admin</option>
+        <option value="usuario" <?php if ($usuario['rol'] == 'usuario') echo 'selected'; ?>>Usuario</option>
+    </select>
+</div>
+
             <div class="mb-3">
         <label for="hotel" class="form-label">Hotel</label>
         <select class="form-control" id="hotel" name="hotel" required>
@@ -94,6 +105,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>Hotel</th>
+                    <th>Rol</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -104,6 +116,7 @@ $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo $row['nombre']; ?></td>
                     <td><?php echo $row['email']; ?></td>
                     <td><?php echo $row['hotel']; ?></td>
+                    <td><?php echo $row['rol']; ?></td>
                     <td>
                         <a href="actualizacionesusuario.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
                             <i class="bi bi-pencil-fill"></i>

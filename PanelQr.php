@@ -1,4 +1,20 @@
+<?php
+session_start();
+$rol = $_SESSION['rol']; // Asegúrate de guardar el rol cuando el usuario inicie sesión
 
+if ($rol === 'admin') {
+    // Mostrar las opciones de agregar, actualizar y eliminar
+    echo '<a href="panelqr.php">Agregar</a>';
+    echo '<a href="actualizacionesempleado.php"></a>';
+    echo '<a href="actualizacionesinvitado.php"></a>';
+    echo '<a href="actualizacionesproveedor.php"></a>';
+    echo '<a href="actualizacionesusuario.php"></a>';
+} elseif ($rol === 'usuario') {
+    // Mostrar solo la opción de agregar
+    echo '<a href="panelqr.php">Agregar</a>';
+}
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -254,23 +270,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $contenidoQR = "$nombre  - $placas - $modeloMarca - $color";
 
     // Generar la fecha actual
-    $fechaActual = date('Y-m-d H:i:s');
-    
-    // Si es un invitado o proveedor, generamos un vencimiento de 3 día
-    if ($tipo == 'invitado' || $tipo == 'proveedor') {
-        // Crear una fecha de vencimiento (3 día desde la fecha actual)
-        $vencimiento = date('Y-m-d H:i:s', strtotime('+3 day', strtotime($fechaActual)));
-        $contenidoQR = "$nombre - $placas - $modeloMarca - $color - Vence el: $vencimiento";
-    } else {
-        // Para empleados, no se establece vencimiento, el QR es permanente
-        $contenidoQR = "$nombre - $placas - $modeloMarca - $color - Permanente";
-    }
+    $fechaActual = new DateTime();
+if ($tipo == 'invitado' || $tipo == 'proveedor') {
+    $vencimiento = $fechaActual->modify('+3 days')->format('Y-m-d H:i:s');
+    $contenidoQR .= " - Vence el: $vencimiento";
+} else {
+    $contenidoQR .= " - Permanente";
+}
+
 
     // Ruta donde se guardará el QR
         //$filename = "img_qr/qr_$tipo" . time() . ".png";
 
     //Sanitizar el nombre para evitar problemas con los nombres de archivo
-        $nombre_sanitizado = str_replace('','_',$nombre);
+    $nombre_sanitizado = str_replace(' ', '_', $nombre);
     //Si es empleado, usamos el Nombre y Numero de colaborador en el nombre del archivo
         if ($tipo == 'empleado'){
             $numeroColaborador=$_POST['numero_colaborador'];
@@ -290,6 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Mostrar el código QR
         echo "<div class='alert alert-success text-center'>Registro exitoso. Código QR generado.</div>";
+
 
         
     // Opción para descargar el código QR y Se guarda con el nombre de cada uno

@@ -41,6 +41,7 @@ try {
         $_SESSION['nombre'] = $user['nombre'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['hotel'] = $user['hotel'];
+        $_SESSION['rol'] = $user['rol'];  // Almacenar el rol
 
         echo json_encode(['success' => true]);
     } else {

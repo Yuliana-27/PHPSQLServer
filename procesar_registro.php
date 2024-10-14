@@ -9,8 +9,8 @@ header('Content-Type: application/json');
 $input = json_decode(file_get_contents('php://input'), true);
 
 // Verificar si todos los campos requeridos están presentes
-if (!isset($input['nombre']) || !isset($input['hotel']) || !isset($input['email']) || !isset($input['password'])) {
-    echo json_encode(['success' => false, 'message' => 'Por favor, completa todos los campos ' . $e->getMessage()]);
+if (!isset($input['nombre'], $input['hotel'], $input['email'], $input['password'], $input['rol'])) {
+    echo json_encode(['success' => false, 'message' => 'Por favor, completa todos los campos']);
     exit;
 }
 
@@ -18,14 +18,11 @@ $nombre = $input['nombre'];
 $hotel = $input['hotel'];
 $email = $input['email'];
 $password = $input['password'];
-
-
-// Agrega este log para ver qué datos recibe el servidor
-error_log(print_r($input, true));
+$rol = $input['rol']; // Obtener el rol
 
 // Validar si los campos están vacíos
-if (empty($nombre) || empty($hotel) || empty($email) || empty($password)) {
-    echo json_encode(['success' => false, 'message' => 'Por favor, completa todos los campos' . $e->getMessage()]);
+if (empty($nombre) || empty($hotel) || empty($email) || empty($password) || empty($rol)) {
+    echo json_encode(['success' => false, 'message' => 'Por favor, completa todos los campos']);
     exit;
 }
 
@@ -49,12 +46,13 @@ try {
     // Encriptar la contraseña
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-    // Insertar los datos en la base de datos
-    $stmt = $conn->prepare("INSERT INTO usuario (nombre, hotel, email, password) VALUES (:nombre, :hotel, :email, :password)");
+    // Insertar los datos en la base de datos, incluyendo el rol
+    $stmt = $conn->prepare("INSERT INTO usuario (nombre, hotel, email, password, rol) VALUES (:nombre, :hotel, :email, :password, :rol)");
     $stmt->bindParam(':nombre', $nombre);
     $stmt->bindParam(':hotel', $hotel);
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':password', $hashedPassword);
+    $stmt->bindParam(':rol', $rol); // Vincular el rol
 
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'message' => 'Usuario registrado con éxito']);

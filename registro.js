@@ -9,15 +9,17 @@ function registrar() {
     const hotel = document.getElementById('hotelRegistro').value; // Obtener el hotel
     const email = document.getElementById('emailRegistro').value; // Obtener el email
     const password = document.getElementById('passwordRegistro').value; // Obtener la contraseña
+    const rol = document.getElementById('rolRegistro').value; // Obtener el rol // Obtener el rol seleccionado
 
     // Agrega estos logs para ver qué se está capturando
     console.log('Nombre:', nombre);
     console.log('Hotel:', hotel);
     console.log('Email:', email);
     console.log('Password:', password);
+    console.log('Rol:', rol);
 
     // Validación de campos
-    if (nombre === '' || hotel === '' || email === '' || password === '') {
+    if (nombre === '' || hotel === '' || email === '' || password === '' || !rol) {
         alert('Por favor, completa todos los campos');
         return;
     }
@@ -29,7 +31,13 @@ function registrar() {
     }
 
     // Crear el objeto con los datos del formulario
-    const data = { nombre: nombre, hotel: hotel, email: email, password: password }; // Incluye nombre y hotel
+    const data = { 
+        nombre: nombre, 
+        hotel: hotel, 
+        email: email, 
+        password: password, 
+        rol: rol  // Incluir el rol
+    };
 
     // Enviar los datos al servidor usando fetch
     fetch('procesar_registro.php', {
@@ -59,6 +67,7 @@ function registrar() {
             document.getElementById('hotelRegistro').value = ''; // Limpiar el hotel
             document.getElementById('emailRegistro').value = ''; // Limpiar el email
             document.getElementById('passwordRegistro').value = ''; // Limpiar la contraseña
+            document.getElementById('rolRegistro').value = '';
             window.location.href = 'index.php';  // Redirigir a la página de login
         } else {
             alert('Error: ' + data.message);  // Mostrar el mensaje de error del servidor

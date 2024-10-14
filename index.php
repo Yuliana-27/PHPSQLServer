@@ -20,7 +20,6 @@
     // Incluir la conexión
     require 'conexion.php';
     ?>
-
     <!-- Contenedor Principal (50% de la pantalla) -->
     <div class="container w-50 mt-5 shadow p-5 bg-transparent rounded text-center">
         <!-- Logo -->
