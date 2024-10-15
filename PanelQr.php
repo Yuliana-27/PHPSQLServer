@@ -282,24 +282,22 @@ if ($tipo == 'invitado' || $tipo == 'proveedor') {
     // Ruta donde se guardará el QR
         //$filename = "img_qr/qr_$tipo" . time() . ".png";
 
-    //Sanitizar el nombre para evitar problemas con los nombres de archivo
-    $nombre_sanitizado = str_replace(' ', '_', $nombre);
-    //Si es empleado, usamos el Nombre y Numero de colaborador en el nombre del archivo
-        if ($tipo == 'empleado'){
-            $numeroColaborador=$_POST['numero_colaborador'];
-            $filename="img_qr/qr_" . $nombre_sanitizado . "_" . $numeroColaborador . ".png";
-        }
+// Para empleados, usamos solo el Numero de colaborador en el nombre del archivo
+if ($tipo == 'empleado') {
+    $numeroColaborador = $_POST['numero_colaborador'];
+    $filename = "img_qr/qr_" . $numeroColaborador . ".png";
+} 
+// Para invitados, usamos solo el nombre en el archivo
+elseif ($tipo == 'invitado') {
+    $nombre = $_POST['nombre'];
+    $filename = "img_qr/qr_" . $nombre . ".png";
+} 
+// Para proveedores, usamos solo el nombre del proveedor en el archivo
+elseif ($tipo == 'proveedor') {
+    $proveedor = $_POST['proveedor'];
+    $filename = "img_qr/qr_" . $proveedor . ".png";
+}
 
-    // Para invitados, usamos solo el nombre en el archivo
-        elseif ($tipo == 'invitado') {
-        $filename = "img_qr/qr_" . $nombre_sanitizado . ".png";
-        } 
-    // Para proveedores, usamos solo el nombre del proveedor en el archivo
-        elseif ($tipo == 'proveedor') {
-        $proveedor = $_POST['proveedor'];
-        $proveedor_sanitizado = str_replace(' ', '_', $proveedor); // Sanitizar nombre del proveedor
-        $filename = "img_qr/qr_" . $proveedor_sanitizado . ".png"; // Solo el nombre del proveedor en el archivo
-        }
 
         // Mostrar el código QR
         echo "<div class='alert alert-success text-center'>Registro exitoso. Código QR generado.</div>";
@@ -308,11 +306,11 @@ if ($tipo == 'invitado' || $tipo == 'proveedor') {
         
     // Opción para descargar el código QR y Se guarda con el nombre de cada uno
     if ($tipo == 'empleado') {
-        echo "<a href='$filename' download='codigo_qr_" . urlencode($nombre_sanitizado) ."' class='btn btn-primary'>Descargar Código QR</a>";
+        echo "<a href='$filename' download='codigo_qr_" ."' class='btn btn-primary'>Descargar Código QR</a>";
     } elseif ($tipo == 'invitado') {
-        echo "<a href='$filename' download='codigo_qr_" . urlencode($nombre_sanitizado) . "' class='btn btn-primary'>Descargar Código QR</a>";
+        echo "<a href='$filename' download='codigo_qr_" . "' class='btn btn-primary'>Descargar Código QR</a>";
     } elseif ($tipo == 'proveedor') {
-        echo "<a href='$filename' download='codigo_qr_" . urlencode($proveedor_sanitizado) . "' class='btn btn-primary'>Descargar Código QR</a>";
+        echo "<a href='$filename' download='codigo_qr_" . "' class='btn btn-primary'>Descargar Código QR</a>";
     }
     
     // Generar el QR

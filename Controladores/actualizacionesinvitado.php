@@ -19,18 +19,38 @@ if (isset($_POST['actualizar'])) {
     $modelo_marca_ = $_POST['modelo_marca'];
     $color_vehiculo_ = $_POST['color_vehiculo'];
 
+    // Verificar el QR y el nombre actual del invitado
+    $sql = "SELECT qr_code, nombre_apellido FROM invitados WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$id_]);
+    $invitado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Ruta del archivo QR existente
+    $oldQrFilePath = $invitado['qr_code'];
+
+    // Si el nombre del invitado ha cambiado, renombrar el archivo QR
+    if ($invitado['nombre_apellido'] != $nombre_apellido_) {
+        $newQrFilePath = "../img_qr/qr_" . $nombre_apellido_ . ".png";
+        
+        // Renombrar el archivo QR existente
+        if (file_exists($oldQrFilePath)) {
+            rename($oldQrFilePath, $newQrFilePath);
+        }
+    } else {
+        // Si no ha cambiado, usar el archivo QR existente
+        $newQrFilePath = $oldQrFilePath;
+    }
+
     // Generar el contenido del QR usando los datos actualizados
-    $qrContent = "Nombre: $nombre_apellido_  \nAsistencia: $area_asistencia_ \nPlacas: $placas_vehiculo_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
+    $qrContent = "Nombre: $nombre_apellido_ \nAsistencia: $area_asistencia_ \nPlacas: $placas_vehiculo_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
 
-    // Ruta donde se guardará la imagen del código QR
-    $qrFilePath = "../img_qr/qr_" . $nombre_apellido_ . ".png";
-
-    // Generar el código QR
-    QRcode::png($qrContent, $qrFilePath);
+    // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
+    QRcode::png($qrContent, $newQrFilePath);
 
     // Guardar la ruta o el nombre del archivo QR en la base de datos
-    $qr_code_ = $qrFilePath;
+    $qr_code_ = $newQrFilePath;
 
+    // Actualizar la información del invitado
     $sql = "UPDATE invitados SET nombre_apellido = ?, area_asistencia = ?, placas_vehiculo = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     
@@ -40,6 +60,7 @@ if (isset($_POST['actualizar'])) {
         echo "<div class='alert alert-danger' role='alert'>Error al actualizar el invitado</div>";
     }
 }
+
 
 // Eliminar invitado
 if (isset($_GET['eliminar'])) {

@@ -9,7 +9,6 @@ $searchTerm = '';
 if (isset($_POST['search'])) {
     $searchTerm = htmlspecialchars($_POST['search']); // Protección contra XSS
 }
-
 // Actualizar proveedor
 if (isset($_POST['actualizar'])) {
     $id_ = $_POST['id'];
@@ -19,17 +18,36 @@ if (isset($_POST['actualizar'])) {
     $modelo_marca_ = $_POST['modelo_marca'];
     $color_vehiculo_ = $_POST['color_vehiculo'];
 
+    // Verificar el QR y el proveedor actual
+    $sql = "SELECT qr_code, proveedor FROM proveedores WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$id_]);
+    $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Ruta del archivo QR existente
+    $oldQrFilePath = $proveedor['qr_code'];
+
+    // Si el proveedor ha cambiado, renombrar el archivo QR
+    if ($proveedor['proveedor'] != $proveedor_) {
+        $newQrFilePath = "../img_qr/qr_" . $proveedor_ . ".png";
+        
+        // Renombrar el archivo QR existente
+        if (file_exists($oldQrFilePath)) {
+            rename($oldQrFilePath, $newQrFilePath);
+        }
+    } else {
+        // Si no ha cambiado, usar el archivo QR existente
+        $newQrFilePath = $oldQrFilePath;
+    }
+
     // Generar el contenido del QR usando los datos actualizados
-    $qrContent = "Nombre: $nombre_apellido_  \nProveedor: $proveedor_ \nPlacas: $placas_vehiculos_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
+    $qrContent = "Nombre: $nombre_apellido_ \nProveedor: $proveedor_ \nPlacas: $placas_vehiculos_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
 
-    // Ruta donde se guardará la imagen del código QR
-    $qrFilePath = "../img_qr/qr_" . $proveedor_ . ".png";
-
-    // Generar el código QR
-    QRcode::png($qrContent, $qrFilePath);
+    // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
+    QRcode::png($qrContent, $newQrFilePath);
 
     // Guardar la ruta o el nombre del archivo QR en la base de datos
-    $qr_code_ = $qrFilePath;
+    $qr_code_ = $newQrFilePath;
 
     $sql = "UPDATE proveedores SET nombre_apellido = ?, proveedor = ?, placas_vehiculos = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
