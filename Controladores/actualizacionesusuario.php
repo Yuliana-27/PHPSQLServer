@@ -10,15 +10,24 @@ if (isset($_POST['actualizar'])) {
     $hotel_ = $_POST['hotel'];
     $rol_ = $_POST['rol'];
 
-    // Actualizar los datos del usuario en la base de datos
-    $sql = "UPDATE usuario SET nombre = ?, email = ?, hotel = ?, rol = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    
-    if ($stmt->execute([$nombre_, $email_, $hotel_, $rol_, $id_])) {
+    // Verificar si el correo ya existe en otro usuario
+    $sql_check = "SELECT COUNT(*) FROM usuario WHERE email = ? AND id != ?";
+    $stmt_check = $conn->prepare($sql_check);
+    $stmt_check->execute([$email_, $id_]);
+    $count = $stmt_check->fetchColumn();
 
-        echo "<div class='alert alert-success' role='alert'>Usuario actualizado correctamente</div>";
+    if ($count > 0) {
+        echo "<div class='alert alert-danger' role='alert'>El email ya está registrado. Por favor, ingrese un email diferente.</div>";
     } else {
-        echo "<div class='alert alert-danger' role='alert'>Error al actualizar el usuario</div>";
+        // Actualizar los datos del usuario en la base de datos
+        $sql = "UPDATE usuario SET nombre = ?, email = ?, hotel = ?, rol = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        
+        if ($stmt->execute([$nombre_, $email_, $hotel_, $rol_, $id_])) {
+            echo "<div class='alert alert-success' role='alert'>Usuario actualizado correctamente</div>";
+        } else {
+            echo "<div class='alert alert-danger' role='alert'>Error al actualizar el usuario</div>";
+        }
     }
 }
 
@@ -41,6 +50,7 @@ $sql = "SELECT id, nombre, email, hotel, rol FROM usuario";
 $stmt = $conn->query($sql);
 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

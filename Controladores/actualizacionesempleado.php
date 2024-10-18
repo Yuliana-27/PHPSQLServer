@@ -22,45 +22,71 @@ if (isset($_POST['actualizar'])) {
     $modelo_marca_ = $_POST['modelo_marca'];
     $color_vehiculo_ = $_POST['color_vehiculo'];
 
-    // Verificar el QR y el número de colaborador actual
-    $sql = "SELECT qr_code, numero_colaborador FROM empleados WHERE id = ?";
+    // Verificar si el número de colaborador ya está registrado en otro empleado
+    $sql = "SELECT COUNT(*) FROM empleados WHERE numero_colaborador = ? AND id != ?";
     $stmt = $conn->prepare($sql);
-    $stmt->execute([$id_]);
-    $empleado = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$numero_colaborador_, $id_]);
+    $colaboradorExistente = $stmt->fetchColumn();
 
-    // Ruta del archivo QR existente
-    $oldQrFilePath = $empleado['qr_code'];
+    if ($colaboradorExistente > 0) {
+        // Si el número de colaborador ya está registrado, mostrar un error
+        echo "<div class='alert alert-danger' role='alert'>Error: El número de colaborador ya está registrado para otro empleado</div>";
+    } else {
+        // Verificar si las placas ya están registradas en otro empleado
+        $sql = "SELECT COUNT(*) FROM empleados WHERE placas_vehiculo = ? AND id != ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$placas_vehiculo_, $id_]);
+        $placasExistentes = $stmt->fetchColumn();
 
-    // Si el número de colaborador ha cambiado, renombrar el archivo QR
-    if ($empleado['numero_colaborador'] != $numero_colaborador_) {
-        $newQrFilePath = "../img_qr/qr_" . $numero_colaborador_ . ".png";
-        
-        // Renombrar el archivo QR existente
-        if (file_exists($oldQrFilePath)) {
-            rename($oldQrFilePath, $newQrFilePath);
+        if ($placasExistentes > 0) {
+            // Si las placas ya están registradas, mostrar un error
+            echo "<div class='alert alert-danger' role='alert'>Error: Las placas del vehículo ya están registradas para otro empleado</div>";
+        } else {
+            // Verificar el QR y el número de colaborador actual
+            $sql = "SELECT qr_code, numero_colaborador FROM empleados WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$id_]);
+            $empleado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Ruta del archivo QR existente
+            $oldQrFilePath = $empleado['qr_code'];
+
+            // Si el número de colaborador ha cambiado, renombrar el archivo QR
+            if ($empleado['numero_colaborador'] != $numero_colaborador_) {
+                $newQrFilePath = "../img_qr/qr_" . $numero_colaborador_ . ".png";
+
+                // Verificar si el nuevo archivo ya existe, en cuyo caso lo eliminamos
+                if (file_exists($newQrFilePath)) {
+                    unlink($newQrFilePath);
+                }
+
+                // Renombrar el archivo QR existente
+                if (file_exists($oldQrFilePath)) {
+                    rename($oldQrFilePath, $newQrFilePath);
+                }
+            } else {
+                // Si no ha cambiado, usar el archivo QR existente
+                $newQrFilePath = $oldQrFilePath;
+            }
+
+            // Generar el contenido del QR usando los datos actualizados
+            $qrContent = "Nombre: $nombre_apellido_ \nColaborador: $numero_colaborador_ \nÁrea: $area_ \nPlacas: $placas_vehiculo_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
+
+            // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
+            QRcode::png($qrContent, $newQrFilePath);
+
+            // Actualizar los datos en la base de datos
+            $sql = "UPDATE empleados SET nombre_apellido = ?, numero_colaborador = ?, area = ?, placas_vehiculo = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt->execute([$nombre_apellido_, $numero_colaborador_, $area_, $placas_vehiculo_, $modelo_marca_, $color_vehiculo_, $newQrFilePath, $id_])) {
+                echo "<div class='alert alert-success' role='alert'>Empleado y código QR actualizados correctamente</div>";
+            } else {
+                echo "<div class='alert alert-danger' role='alert'>Error al actualizar el empleado</div>";
+            }
         }
-    } else {
-        // Si no ha cambiado, usar el archivo QR existente
-        $newQrFilePath = $oldQrFilePath;
-    }
-
-    // Generar el contenido del QR usando los datos actualizados
-    $qrContent = "Nombre: $nombre_apellido_ \nColaborador: $numero_colaborador_ \nÁrea: $area_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
-
-    // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
-    QRcode::png($qrContent, $newQrFilePath);
-
-    // Actualizar los datos en la base de datos
-    $sql = "UPDATE empleados SET nombre_apellido = ?, numero_colaborador = ?, area = ?, placas_vehiculo = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-
-    if ($stmt->execute([$nombre_apellido_, $numero_colaborador_, $area_, $placas_vehiculo_, $modelo_marca_, $color_vehiculo_, $newQrFilePath, $id_])) {
-        echo "<div class='alert alert-success' role='alert'>Empleado y código QR actualizados correctamente</div>";
-    } else {
-        echo "<div class='alert alert-danger' role='alert'>Error al actualizar el empleado</div>";
     }
 }
-
 
 // Eliminar empleado
 if (isset($_GET['eliminar'])) {
@@ -193,7 +219,7 @@ $empleados = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo $row['placas_vehiculo']; ?></td>
                     <td><?php echo $row['modelo_marca']; ?></td>
                     <td><?php echo $row['color_vehiculo']; ?></td>
-                    <td><img src="<?php echo $row['qr_code']; ?>" alt="QR Code" style="width: 50px; height: 50px;"></td>  
+                    <td><?php echo $row['qr_code']; ?></td>  
                     <td><?php echo $row['estado'] ? 'Habilitado' : 'Deshabilitado'; ?></td> <!-- Mostrar estado -->
                     <td>
                         <a href="actualizacionesempleado.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">

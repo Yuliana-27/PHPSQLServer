@@ -9,6 +9,7 @@ $searchTerm = '';
 if (isset($_POST['search'])) {
     $searchTerm = htmlspecialchars($_POST['search']); // Protección contra XSS
 }
+
 // Actualizar proveedor
 if (isset($_POST['actualizar'])) {
     $id_ = $_POST['id'];
@@ -18,46 +19,57 @@ if (isset($_POST['actualizar'])) {
     $modelo_marca_ = $_POST['modelo_marca'];
     $color_vehiculo_ = $_POST['color_vehiculo'];
 
-    // Verificar el QR y el proveedor actual
-    $sql = "SELECT qr_code, proveedor FROM proveedores WHERE id = ?";
+    // Verificar si la placa ya existe para otro proveedor
+    $sql = "SELECT id FROM proveedores WHERE placas_vehiculos = ? AND id != ?";
     $stmt = $conn->prepare($sql);
-    $stmt->execute([$id_]);
-    $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$placas_vehiculos_, $id_]);
+    $existingPlaca = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Ruta del archivo QR existente
-    $oldQrFilePath = $proveedor['qr_code'];
+    if ($existingPlaca) {
+        echo "<div class='alert alert-danger' role='alert'>Error: Las placas del vehículo ya están registradas para otro proveedor.</div>";
+    } else {
+        // Verificar el QR y el proveedor actual
+        $sql = "SELECT qr_code, proveedor FROM proveedores WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$id_]);
+        $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Si el proveedor ha cambiado, renombrar el archivo QR
-    if ($proveedor['proveedor'] != $proveedor_) {
-        $newQrFilePath = "../img_qr/qr_" . $proveedor_ . ".png";
-        
-        // Renombrar el archivo QR existente
-        if (file_exists($oldQrFilePath)) {
-            rename($oldQrFilePath, $newQrFilePath);
+        // Ruta del archivo QR existente
+        $oldQrFilePath = $proveedor['qr_code'];
+
+        // Si el proveedor ha cambiado, renombrar el archivo QR
+        if ($proveedor['proveedor'] != $proveedor_) {
+            $newQrFilePath = "../img_qr/qr_" . $proveedor_ . ".png";
+            
+            // Renombrar el archivo QR existente
+            if (file_exists($oldQrFilePath)) {
+                rename($oldQrFilePath, $newQrFilePath);
+            }
+        } else {
+            // Si no ha cambiado, usar el archivo QR existente
+            $newQrFilePath = $oldQrFilePath;
         }
-    } else {
-        // Si no ha cambiado, usar el archivo QR existente
-        $newQrFilePath = $oldQrFilePath;
-    }
 
-    // Generar el contenido del QR usando los datos actualizados
-    $qrContent = "Nombre: $nombre_apellido_ \nProveedor: $proveedor_ \nPlacas: $placas_vehiculos_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
+        // Generar el contenido del QR usando los datos actualizados
+        $qrContent = "Nombre: $nombre_apellido_ \nProveedor: $proveedor_ \nPlacas: $placas_vehiculos_ \nVehículo: $modelo_marca_ ($color_vehiculo_)";
 
-    // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
-    QRcode::png($qrContent, $newQrFilePath);
+        // Actualizar el contenido del QR (sobrescribir el archivo QR existente)
+        QRcode::png($qrContent, $newQrFilePath);
 
-    // Guardar la ruta o el nombre del archivo QR en la base de datos
-    $qr_code_ = $newQrFilePath;
+        // Guardar la ruta o el nombre del archivo QR en la base de datos
+        $qr_code_ = $newQrFilePath;
 
-    $sql = "UPDATE proveedores SET nombre_apellido = ?, proveedor = ?, placas_vehiculos = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    
-    if ($stmt->execute([$nombre_apellido_, $proveedor_, $placas_vehiculos_, $modelo_marca_, $color_vehiculo_, $qr_code_, $id_])) {
-        echo "<div class='alert alert-success' role='alert'>Proveedor y código QR actualizados correctamente</div>";
-    } else {
-        echo "<div class='alert alert-danger' role='alert'>Error al actualizar el proveedor</div>";
+        $sql = "UPDATE proveedores SET nombre_apellido = ?, proveedor = ?, placas_vehiculos = ?, modelo_marca = ?, color_vehiculo = ?, qr_code = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        
+        if ($stmt->execute([$nombre_apellido_, $proveedor_, $placas_vehiculos_, $modelo_marca_, $color_vehiculo_, $qr_code_, $id_])) {
+            echo "<div class='alert alert-success' role='alert'>Proveedor y código QR actualizados correctamente</div>";
+        } else {
+            echo "<div class='alert alert-danger' role='alert'>Error al actualizar el proveedor</div>";
+        }
     }
 }
+
 
 // Eliminar proveedor
 if (isset($_GET['eliminar'])) {
@@ -180,7 +192,7 @@ if (isset($_GET['habilitar']) || isset($_GET['deshabilitar'])) {
                     <td><?php echo $row['placas_vehiculos']; ?></td>
                     <td><?php echo $row['modelo_marca']; ?></td>
                     <td><?php echo $row['color_vehiculo']; ?></td>
-                    <td><img src="<?php echo $row['qr_code']; ?>" alt="QR Code" style="width: 50px; height: 50px;"></td>
+                    <td><?php echo $row['qr_code']; ?></td>
                     <td><?php echo $row['estado'] ? 'Habilitado' : 'Deshabilitado'; ?></td>
                     <td>
                         <a href="actualizacionesproveedor.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
