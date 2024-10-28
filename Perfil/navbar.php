@@ -102,6 +102,9 @@ $rol = isset($_SESSION['rol']) ? $_SESSION['rol'] : 'usuario'; // Si no se defin
                         <li class="nav-item">
                             <a class="nav-link active" href="./Controladores/actualizacionesusuario.php">Cátalago de Usuarios</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="./Controladores/actualizacionesempresa.php">Información de la Empresa</a>
+                        </li>
                         <?php endif; ?>
                     </ul>
                 </div>
