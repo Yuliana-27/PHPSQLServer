@@ -100,6 +100,13 @@ $asistencias = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </form>
         <?php endif; ?>
 
+        <div class="d-flex justify-content-end mb-2">
+    <!-- Enlace a la derecha con margen superior y mejor formato -->
+    <a href="../fpdf/reporteAsistenciaproveedor.php" target="_blank" class="btn btn-primary d-flex align-items-center ms-3 mt-3">
+        <i class="bi bi-file-earmark-pdf-fill me-2"></i> Generar Reporte
+    </a>
+</div>
+
         <!-- Tabla de asistencia -->
         <table class="table table-striped table-hover">
             <thead class="table-dark">
@@ -119,10 +126,10 @@ $asistencias = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo $row['fecha_entrada']; ?></td>
                     <td><?php echo $row['fecha_salida']; ?></td>
                     <td>
-                        <a href="actualizacionesasistencia.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
+                        <a href="asistenciaproveedor.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">
                             <i class="bi bi-pencil-fill"></i> Editar
                         </a>
-                        <a href="actualizacionesasistencia.php?eliminar=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este registro de asistencia?');">
+                        <a href="asistenciaproveedor.php?eliminar=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este registro de asistencia?');">
                             <i class="bi bi-trash-fill"></i> Eliminar
                         </a>
                     </td>
